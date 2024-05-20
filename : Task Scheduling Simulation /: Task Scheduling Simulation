@@ -1,0 +1,76 @@
+//cpp
+
+#include <iostream>
+#include <set>
+
+struct Task {
+    int pid;
+    int priority; 
+    double virtual_runtime;  
+
+    Task(int pid, int priority) : pid(pid), priority(priority), virtual_runtime(0.0) {}
+};
+
+struct CompareTasks {
+    bool operator()(const Task* t1, const Task* t2) const {
+
+       return t1->virtual_runtime < t2->virtual_runtime;
+    }
+};
+
+std::set<Task*, CompareTasks> runnable_tasks; 
+
+void insertTask(Task* task) {
+    runnable_tasks.insert(task);
+}
+
+void updateVirtualRuntime(Task* task, double cpu_time) {
+   
+    task->virtual_runtime += cpu_time / task->priority;
+}
+
+Task* getNextTask() {
+   
+    if (!runnable_tasks.empty()) {
+        Task* next_task = *runnable_tasks.begin();
+        runnable_tasks.erase(runnable_tasks.begin());
+        return next_task;
+    }
+    return NULL;
+}
+
+void changePriority(Task* task, int new_priority) {
+
+runnable_tasks.erase(task);
+    
+
+task->priority = new_priority;
+    
+    insertTask(task);
+}
+
+int main() {
+
+Task task1(1, 1);
+    Task task2(2, 2);
+    Task task3(3, 3);
+
+    insertTask(&task1);
+    insertTask(&task2);
+    insertTask(&task3);
+
+    Task* next_task = getNextTask();
+    if (next_task != NULL) {
+        std::cout << "Next task: " << next_task->pid << std::endl;
+    }
+
+    changePriority(&task1, 5);
+    std::cout << "Changed priority of task 1 to 5" << std::endl;
+
+    insertTask(&task1);
+
+    updateVirtualRuntime(next_task, 10.0);
+    std::cout << "Updated virtual runtime for task " << next_task->pid << ": " << next_task->virtual_runtime << std::endl;
+
+    return 0;
+}
